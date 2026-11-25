@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Real-time, physically scaled Solar System explorer." />
+    <title>ORRERY — Solar prototype</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/",
+          "satellite.js": "https://cdn.jsdelivr.net/npm/satellite.js@7.1.0/+esm"
+        }
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+  </head>
+  <body>
+    <main id="app" aria-label="Solar System explorer">
+      <canvas id="space" aria-label="Real-time 3D view of the Solar System"></canvas>
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Return to the Sun view">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>ORRERY <small>/ V1.0.2</small></span>
+        </a>
+        <div class="clock" aria-live="polite">
+          <span class="clock-label">SIMULATED TIME</span>
+          <time id="sim-time">—</time>
+        </div>
+        <div class="top-actions">
+          <div class="language-switch" role="group" aria-label="Interface language">
+            <button type="button" data-language="en" aria-pressed="true">EN</button>
+            <button type="button" data-language="fr" aria-pressed="false">FR</button>
+          </div>
+          <button id="time-mode" class="mode-button" type="button" aria-pressed="true">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span class="mode-label">REAL TIME ×1</span>
+          </button>
+        </div>
+      </header>
+
+      <nav class="body-picker" aria-label="Choose a celestial body">
+        <button type="button" data-body="sun" aria-pressed="false"><span>01</span> SUN</button>
+        <button type="button" data-body="mercury" aria-pressed="false"><span>02</span> MERCURY</button>
+        <button type="button" data-body="venus" aria-pressed="false"><span>03</span> VENUS</button>
+        <button type="button" data-body="earth" aria-pressed="true"><span>04</span> EARTH</button>
+        <button type="button" data-body="moon" aria-pressed="false"><span>05</span> MOON</button>
+        <button type="button" data-body="mars" aria-pressed="false"><span>06</span> MARS</button>
+        <button type="button" data-body="jupiter" aria-pressed="false"><span>07</span> JUPITER</button>
+        <button type="button" data-body="saturn" aria-pressed="false"><span>08</span> SATURN</button>
+        <button type="button" data-body="uranus" aria-pressed="false"><span>09</span> URANUS</button>
+        <button type="button" data-body="neptune" aria-pressed="false"><span>10</span> NEPTUNE</button>
+        <button type="button" data-body="iss" aria-pressed="false"><span>11</span> ISS</button>
+      </nav>
+
+      <section class="focus-panel" aria-live="polite">
+        <p class="eyebrow">ACTIVE TARGET</p>
+        <div class="target-heading">
+          <span id="target-index">01</span>
+          <div>
+            <h1 id="target-name">EARTH</h1>
+            <p id="target-type">TERRESTRIAL PLANET</p>
+          </div>
+        </div>
+        <dl class="stats">
+          <div><dt id="target-distance-label">DIST. SUN</dt><dd id="target-distance">—</dd></div>
+          <div><dt id="target-size-label">ACTUAL RADIUS</dt><dd id="target-radius">6,371 km</dd></div>
+        </dl>
+        <p class="tracking"><span aria-hidden="true"></span> CAMERA TRACKING ACTIVE</p>
+        <p class="scale-note">POSITIONS AND RADII USE ONE UNIFORM PHYSICAL SCALE</p>
+      </section>
+
+      <div id="labels-layer" class="labels-layer" aria-label="Visible celestial bodies"></div>
+      <div id="city-markers-layer" class="city-markers-layer" aria-label="Local city clocks"></div>
+
+      <button id="admin-open" class="admin-open" type="button" aria-label="Open administrator settings">⚙</button>
+      <dialog id="admin-dialog" class="admin-dialog">
+        <div class="admin-titlebar">
+          <div><span>ADMIN</span><strong>RENDER CONTROLS</strong></div>
+          <button id="admin-close" type="button" aria-label="Close">×</button>
+        </div>
+        <form id="admin-login" class="admin-login">
+          <label for="admin-password">PASSWORD</label>
+          <input id="admin-password" type="password" autocomplete="current-password" />
+          <button type="submit">UNLOCK</button>
+          <p id="admin-error" role="alert"></p>
+        </form>
+        <section id="admin-panel" class="admin-panel" hidden>
+          <div class="admin-status">
+            <span id="save-indicator"></span>
+            <b id="save-status">CONFIGURATION LOADED</b>
+            <button id="admin-logout" type="button">LOG OUT</button>
+          </div>
+          <div id="admin-fields" class="admin-fields"></div>
+          <p class="admin-path"><span>AUTOMATIC SAVE</span><br /><code>Assets/Configs/runtime.json</code></p>
+        </section>
+      </dialog>
+
+      <footer class="hud-footer">
+        <div class="coordinates">
+          <span>HELIOCENTRIC REFERENCE FRAME · J2000</span>
+          <strong id="engine-status">ASTRONOMY ENGINE</strong>
+          <span class="cloud-credit">CLOUDS · LIVE CLOUD MAPS · CONTAINS MODIFIED EUMETSAT DATA</span>
+        </div>
+        <p class="model-credit">
+          “INTERNATIONAL SPACE STATION - ISS - 3D” · <a href="https://skfb.ly/onPTv" target="_blank" rel="noreferrer">ARNAUDBANNER</a> ·
+          <a href="http://creativecommons.org/licenses/by-nd/4.0/" target="_blank" rel="noreferrer">CC BY-ND 4.0</a>
+        </p>
+        <div class="controls-help" aria-label="Controls">
+          <span><i class="mouse-icon left"></i> ORBIT</span>
+          <span><i class="mouse-icon wheel"></i> ZOOM</span>
+          <span><i class="mouse-icon right"></i> PAN</span>
+          <span><i class="click-icon"></i> TRACK A BODY</span>
+        </div>
+      </footer>
+    </main>
+    <noscript>This experience requires JavaScript.</noscript>
+    <script type="module" src="./Javascript/app.js"></script>
+  </body>
+</html>
